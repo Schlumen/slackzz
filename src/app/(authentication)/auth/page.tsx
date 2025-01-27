@@ -1,17 +1,19 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Provider } from "@supabase/supabase-js";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { BsSlack } from "react-icons/bs";
 import { FcGoogle } from "react-icons/fc";
-import { RxGithubLogo } from "react-icons/rx";
-import { set, useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
 import { MdOutlineAutoAwesome } from "react-icons/md";
-import { Provider } from "@supabase/supabase-js";
+import { RxGithubLogo } from "react-icons/rx";
+import { z } from "zod";
+import { useRouter } from "next/navigation";
 
+import { supabaseBrowserClient } from "@/lib/supabase/client";
+import { registerWithEmail } from "@/actions/register-with-email";
 import { Button } from "@/components/ui/button";
-import Typography from "@/components/ui/typography";
 import {
   Form,
   FormControl,
@@ -20,11 +22,28 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { supabaseBrowserClient } from "@/lib/supabase/client";
-import { registerWithEmail } from "@/actions/register-with-email";
+import Typography from "@/components/ui/typography";
 
 export const AuthPage = () => {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  const router = useRouter();
+
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const {
+        data: { session },
+      } = await supabaseBrowserClient.auth.getSession();
+
+      if (session) {
+        router.push("/");
+      }
+    };
+
+    getCurrentUser();
+    setIsMounted(true);
+  }, [router]);
 
   const formSchema = z.object({
     email: z.string().email().min(2, { message: "Email is required" }),
@@ -40,7 +59,7 @@ export const AuthPage = () => {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsAuthenticating(true);
     const response = await registerWithEmail(values);
-    const { data, error } = JSON.parse(response);
+    const { error } = JSON.parse(response);
     setIsAuthenticating(false);
 
     if (error) {
@@ -59,6 +78,8 @@ export const AuthPage = () => {
     });
     setIsAuthenticating(false);
   }
+
+  if (!isMounted) return null;
 
   return (
     <div className="min-h-screen p-5 grid text-center place-content-center bg-white">
