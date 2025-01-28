@@ -1,12 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import slugify from "slugify";
+import { v4 as uuid } from "uuid";
+import { toast } from "sonner";
 
+import { createWorkspace } from "@/actions/create-workspace";
 import ImageUpload from "@/components/image-upload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Typography from "@/components/ui/typography";
 import { useCreateWorkspaceValues } from "@/hooks/create-workspace-values";
+import { useRouter } from "next/navigation";
 
 const CreateWorkspace = () => {
   const { currStep } = useCreateWorkspaceValues();
@@ -80,12 +85,23 @@ const Step1 = () => {
 };
 
 const Step2 = () => {
-  const { setCurrStep, updateImageUrl, imageUrl } = useCreateWorkspaceValues();
+  const { setCurrStep, updateImageUrl, imageUrl, name } =
+    useCreateWorkspaceValues();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setIsSubmitting(true);
-    // WORKSPACE CREATION LOGIC
+    const slug = slugify(name);
+    const invite_code = uuid();
+    const error = await createWorkspace({ imageUrl, name, slug, invite_code });
+    setIsSubmitting(false);
+    if (error?.error) {
+      console.log(error);
+      return toast.error("Error creating workspace");
+    }
+    toast.success("Workspace created successfully");
+    router.push("/");
   };
 
   return (
