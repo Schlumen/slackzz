@@ -13,6 +13,8 @@ export const metadata: Metadata = {
   description: "Slack clone",
 };
 
+export const revalidate = 0;
+
 export default function RootLayout({
   children,
 }: Readonly<{
