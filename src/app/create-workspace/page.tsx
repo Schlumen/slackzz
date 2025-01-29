@@ -92,7 +92,7 @@ const Step2 = () => {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    const slug = slugify(name);
+    const slug = slugify(name, { lower: true });
     const invite_code = uuid();
     const error = await createWorkspace({ imageUrl, name, slug, invite_code });
     setIsSubmitting(false);

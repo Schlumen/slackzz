@@ -1,19 +1,24 @@
-import { FC } from "react";
-import { FaPlus } from "react-icons/fa";
+"use client";
+
+import { FC, useState } from "react";
 import { PiChatsTeardrop } from "react-icons/pi";
 import { RiHome2Fill } from "react-icons/ri";
+import { useRouter } from "next/navigation";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import Typography from "@/components/ui/typography";
-import { Workspace } from "@/types/app";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
+import Typography from "@/components/ui/typography";
+import { Workspace } from "@/types/app";
+import CreateWorkspace from "@/components/create-workspace";
+import ProgressBar from "@/components/progress-bar";
+import { cn } from "@/lib/utils";
+import { useColorPreferences } from "@/providers/color-preferences";
 
 type SidebarNavProps = {
   userWorkspaceData: Workspace[];
@@ -24,6 +29,27 @@ const SidebarNav: FC<SidebarNavProps> = ({
   currentWorkspaceData,
   userWorkspaceData,
 }) => {
+  const { color } = useColorPreferences();
+  let backgroundColor = "bg-primary-dark";
+
+  if (color === "green") {
+    backgroundColor = "bg-green-700";
+  } else if (color === "blue") {
+    backgroundColor = "bg-blue-700";
+  }
+
+  // Switch workspace function
+  const router = useRouter();
+  const [switchingWorkspace, setSwitchingWorkspace] = useState(false);
+
+  const switchWorkspace = async (id: string) => {
+    setSwitchingWorkspace(true);
+    router.push(`/workspace/${id}`);
+    setTimeout(() => {
+      setSwitchingWorkspace(false);
+    }, 2000);
+  };
+
   return (
     <nav>
       <ul className="flex flex-col space-y-4">
@@ -48,45 +74,54 @@ const SidebarNav: FC<SidebarNavProps> = ({
               <PopoverContent className="p-0" side="bottom">
                 <Card className="w-[350px] border-0">
                   <CardContent className="flex p-0 flex-col">
-                    {userWorkspaceData.map(workspace => (
-                      <div
-                        key={workspace.id}
-                        className="hover:opacity-70 px-2 py-1 flex gap-2"
-                      >
-                        <Avatar>
-                          <AvatarImage
-                            src={workspace.image_url || ""}
-                            alt={workspace.name}
-                            className="object-cover w-full h-full"
-                          />
-                          <AvatarFallback>
-                            <Typography
-                              text={workspace.name.slice(0, 2)}
-                              variant="p"
-                            />
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <Typography
-                            text={workspace.name}
-                            variant="p"
-                            className="text-sm"
-                          />
-                          <Typography
-                            text={workspace.invite_code || ""}
-                            variant="p"
-                            className="text-xs lg:text-xs"
-                          />
-                        </div>
+                    {switchingWorkspace ? (
+                      <div className="m-2">
+                        <ProgressBar />
                       </div>
-                    ))}
+                    ) : (
+                      userWorkspaceData.map(workspace => {
+                        const isActive =
+                          workspace.id === currentWorkspaceData.id;
+                        return (
+                          <div
+                            key={workspace.id}
+                            className={cn(
+                              isActive && `${backgroundColor} text-white`,
+                              `hover:opacity-70 px-2 py-1 flex gap-2 cursor-pointer`
+                            )}
+                            onClick={() => switchWorkspace(workspace.id)}
+                          >
+                            <Avatar>
+                              <AvatarImage
+                                src={workspace.image_url || ""}
+                                alt={workspace.name}
+                                className="object-cover w-full h-full"
+                              />
+                              <AvatarFallback>
+                                <Typography
+                                  text={workspace.name.slice(0, 2)}
+                                  variant="p"
+                                />
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <Typography
+                                text={workspace.name}
+                                variant="p"
+                                className="text-sm"
+                              />
+                              <Typography
+                                text={workspace.invite_code || ""}
+                                variant="p"
+                                className="text-xs lg:text-xs"
+                              />
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
                     <Separator />
-                    <div className="flex items-center gap-2 p-2">
-                      <Button variant="secondary">
-                        <FaPlus />
-                      </Button>
-                      <Typography text="Add Workspace" variant="p" />
-                    </div>
+                    <CreateWorkspace />
                   </CardContent>
                 </Card>
               </PopoverContent>
