@@ -26,6 +26,7 @@ import { useColorPreferences } from "@/providers/color-preferences";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Typography from "@/components/ui/typography";
 import { FaRegCalendarCheck } from "react-icons/fa";
+import PreferencesDialog from "@/components/preferences-dialog";
 
 type SidebarProps = {
   userWorkspaceData: Workspace[];
@@ -152,6 +153,7 @@ const Sidebar: FC<SidebarProps> = ({
                           variant="p"
                         />
                         {/* Preferences Dialog */}
+                        <PreferencesDialog />
                         <hr className="bg-gray-400" />
                         <div className="flex gap-2 items-center hover:text-white hover:bg-blue-700 px-2 py-1 rounded cursor-pointer">
                           <IoDiamondOutline className="text-orange-400" />
