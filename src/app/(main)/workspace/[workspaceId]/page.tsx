@@ -9,15 +9,19 @@ import Sidebar from "@/components/sidebar";
 import { Workspace as UserWorkspace } from "@/types/app";
 import { redirect } from "next/navigation";
 
-const Workspace = async ({ params }: { params: Promise<{ id: string }> }) => {
-  const { id } = await params;
+const Workspace = async ({
+  params,
+}: {
+  params: Promise<{ workspaceId: string }>;
+}) => {
+  const { workspaceId } = await params;
 
   const userData = await getUserData();
   if (!userData) return redirect("/auth");
 
   const [userWorkspaceData] = await getUserWorkspaceData(userData.workspaces!);
 
-  const [currentWorkspaceData] = await getCurrentWorkspaceData(id);
+  const [currentWorkspaceData] = await getCurrentWorkspaceData(workspaceId);
 
   const userWorkspaceChannels = await getUserWorkspaceChannels(
     currentWorkspaceData.id,
@@ -36,6 +40,7 @@ const Workspace = async ({ params }: { params: Promise<{ id: string }> }) => {
           userData={userData}
           currentWorkspaceData={currentWorkspaceData}
           userWorkspaceChannels={userWorkspaceChannels}
+          currentChannelId=""
         />
         Workspace
       </div>

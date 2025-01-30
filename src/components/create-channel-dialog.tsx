@@ -10,6 +10,7 @@ import { z } from "zod";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -93,9 +94,11 @@ const ChreateChannelDialog: FC<{
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    <div className="scroll-m-4 text-sm font-normal tracking-tight lg:text-base">
-                      Channel name
-                    </div>
+                    <DialogDescription asChild>
+                      <div className="scroll-m-4 text-sm font-normal tracking-tight lg:text-base">
+                        Channel name
+                      </div>
+                    </DialogDescription>
                     <FormControl>
                       <Input
                         {...field}
