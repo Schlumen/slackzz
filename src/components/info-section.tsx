@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { FC, useState } from "react";
+import { FaArrowDown, FaArrowUp, FaPlus } from "react-icons/fa6";
 
 import { cn } from "@/lib/utils";
 import { useColorPreferences } from "@/providers/color-preferences";
@@ -9,14 +10,19 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { FaArrowDown, FaArrowUp, FaPlus } from "react-icons/fa6";
-import Typography from "./ui/typography";
+import Typography from "@/components/ui/typography";
+import CreateChannelDialog from "@/components/create-channel-dialog";
+import { User, Workspace } from "@/types/app";
 
-const InfoSection = () => {
+const InfoSection: FC<{ userData: User; currentWorkspaceData: Workspace }> = ({
+  userData,
+  currentWorkspaceData,
+}) => {
   const { color } = useColorPreferences();
   const [isChannelCollapsed, setIsChannelCollapsed] = useState(false);
   const [isDirectMessageCollapsed, setIsDirectMessageCollapsed] =
     useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   let backgroundColor = "bg-primary-light";
 
@@ -53,7 +59,10 @@ const InfoSection = () => {
                 {isChannelCollapsed ? <FaArrowDown /> : <FaArrowUp />}
                 <Typography variant="p" text="Channels" className="font-bold" />
               </CollapsibleTrigger>
-              <div className={cn("cursor-pointer p-2 rounded-full", hoverBg)}>
+              <div
+                className={cn("cursor-pointer p-2 rounded-full", hoverBg)}
+                onClick={() => setDialogOpen(true)}
+              >
                 <FaPlus />
               </div>
             </div>
@@ -120,6 +129,13 @@ const InfoSection = () => {
           </Collapsible>
         </div>
       </div>
+
+      <CreateChannelDialog
+        setDialogOpen={setDialogOpen}
+        dialogOpen={dialogOpen}
+        workspaceId={currentWorkspaceData.id}
+        userId={userData.id}
+      />
     </div>
   );
 };
