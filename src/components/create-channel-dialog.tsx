@@ -3,6 +3,7 @@
 import { Dispatch, FC, SetStateAction, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 import {
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { createChannel } from "@/actions/channels";
 
 const ChreateChannelDialog: FC<{
   dialogOpen: boolean;
@@ -45,7 +47,29 @@ const ChreateChannelDialog: FC<{
   });
 
   const onSubmit = async ({ name }: z.infer<typeof formSchema>) => {
-    console.log(name);
+    try {
+      setIsSubmitting(true);
+
+      const data = await createChannel({
+        name,
+        workspaceId,
+        userId,
+      });
+
+      setIsSubmitting(false);
+
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
+
+      setDialogOpen(false);
+      form.reset();
+      toast.success("Channel created successfully");
+    } catch (error) {
+      console.error(error);
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -73,13 +97,13 @@ const ChreateChannelDialog: FC<{
                       <Input
                         {...field}
                         placeholder="Channel name"
-                        className="my-1"
+                        className="my-2"
                       />
                     </FormControl>
                     <FormDescription>
-                      <div className="mb-4 scroll-m-4 text-sm font-normal tracking-tight lg:text-base">
+                      <span className="mb-4 scroll-m-4 text-sm font-normal tracking-tight lg:text-base">
                         This is your channel name
-                      </div>
+                      </span>
                     </FormDescription>
                     <FormMessage />
                   </FormLabel>
