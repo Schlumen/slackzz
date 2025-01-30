@@ -62,7 +62,7 @@ const config = {
     },
   },
   // eslint-disable-next-line
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
 } satisfies Config;
 
 export default withUt(config);
