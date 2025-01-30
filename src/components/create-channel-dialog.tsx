@@ -2,6 +2,7 @@
 
 import { Dispatch, FC, SetStateAction, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -32,6 +33,7 @@ const ChreateChannelDialog: FC<{
   userId: string;
 }> = ({ dialogOpen, setDialogOpen, workspaceId, userId }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
   const formSchema = z.object({
     name: z
@@ -56,6 +58,7 @@ const ChreateChannelDialog: FC<{
         userId,
       });
 
+      router.refresh();
       setIsSubmitting(false);
 
       if (data?.error) {

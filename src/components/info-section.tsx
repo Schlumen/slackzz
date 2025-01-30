@@ -12,12 +12,13 @@ import {
 } from "@/components/ui/collapsible";
 import Typography from "@/components/ui/typography";
 import CreateChannelDialog from "@/components/create-channel-dialog";
-import { User, Workspace } from "@/types/app";
+import { Channel, User, Workspace } from "@/types/app";
 
-const InfoSection: FC<{ userData: User; currentWorkspaceData: Workspace }> = ({
-  userData,
-  currentWorkspaceData,
-}) => {
+const InfoSection: FC<{
+  userData: User;
+  currentWorkspaceData: Workspace;
+  userWorkspaceChannels: Channel[];
+}> = ({ userData, currentWorkspaceData, userWorkspaceChannels }) => {
   const { color } = useColorPreferences();
   const [isChannelCollapsed, setIsChannelCollapsed] = useState(false);
   const [isDirectMessageCollapsed, setIsDirectMessageCollapsed] =
@@ -67,26 +68,14 @@ const InfoSection: FC<{ userData: User; currentWorkspaceData: Workspace }> = ({
               </div>
             </div>
             <CollapsibleContent>
-              <Typography
-                variant="p"
-                text="# Channel 1"
-                className={cn("px-2 py-1 rounded-sm cursor-pointer", hoverBg)}
-              />
-              <Typography
-                variant="p"
-                text="# Channel 2"
-                className={cn("px-2 py-1 rounded-sm cursor-pointer", hoverBg)}
-              />
-              <Typography
-                variant="p"
-                text="# Channel 3"
-                className={cn("px-2 py-1 rounded-sm cursor-pointer", hoverBg)}
-              />
-              <Typography
-                variant="p"
-                text="# Channel 4"
-                className={cn("px-2 py-1 rounded-sm cursor-pointer", hoverBg)}
-              />
+              {userWorkspaceChannels.map(channel => (
+                <Typography
+                  key={channel.id}
+                  variant="p"
+                  text={`# ${channel.name}`}
+                  className={cn("px-2 py-1 rounded-sm cursor-pointer", hoverBg)}
+                />
+              ))}
             </CollapsibleContent>
           </Collapsible>
         </div>
