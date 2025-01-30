@@ -27,7 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { createChannel } from "@/actions/channels";
 
-const ChreateChannelDialog: FC<{
+const CreateChannelDialog: FC<{
   dialogOpen: boolean;
   setDialogOpen: Dispatch<SetStateAction<boolean>>;
   workspaceId: string;
@@ -127,4 +127,4 @@ const ChreateChannelDialog: FC<{
   );
 };
 
-export default ChreateChannelDialog;
+export default CreateChannelDialog;
