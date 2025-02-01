@@ -76,7 +76,7 @@ body {
 }
 
 .tiptap p.is-editor-empty:first-child::before {
-  color: #adb5db;
+  color: #9b9b9b;
   content: attr(data-placeholder);
   float: left;
   height: 0;
