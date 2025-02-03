@@ -2,12 +2,12 @@
 
 import { FC } from "react";
 
-import { Channel, User, Workspace } from "@/types/app";
-import Sidebar from "@/components/sidebar";
-import InfoSection from "@/components/info-section";
 import ChatHeader from "@/components/chat-header";
-import Typography from "@/components/ui/typography";
+import InfoSection from "@/components/info-section";
+import Sidebar from "@/components/sidebar";
 import TextEditor from "@/components/text-editor";
+import { Channel, User, Workspace } from "@/types/app";
+import ChatMessages from "./chat-messages";
 
 type ChatGroupProps = {
   type: "Channel" | "DirectMessage";
@@ -62,7 +62,19 @@ const ChatGroup: FC<ChatGroupProps> = ({
           <ChatHeader title={headerTitle} chatId={chatId} userData={userData} />
 
           <div className="mt-10">
-            <Typography variant="h4" text="Chat Content" />
+            <ChatMessages
+              userData={userData}
+              name={currentChannelData?.name ?? "USERNAME"}
+              workspaceData={currentWorkspaceData}
+              chatId={chatId}
+              type={type}
+              apiUrl={apiUrl}
+              socketUrl={socketUrl}
+              socketQuery={socketQuery}
+              paramKey={paramKey}
+              paramValue={paramValue}
+              channelData={currentChannelData}
+            />
           </div>
         </div>
       </div>

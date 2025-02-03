@@ -49,6 +49,8 @@ export type Message = {
   workspace_id: string;
 };
 
+export type MessageWithUser = Message & { user: User };
+
 export type SocketIoApiResponse = NextApiResponse & {
   socket: Socket & {
     server: NetServer & {
