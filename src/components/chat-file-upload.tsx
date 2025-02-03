@@ -24,7 +24,8 @@ import { supabaseBrowserClient } from "@/lib/supabase/client";
 type ChatFileUploadProps = {
   userData: User;
   workspaceData: Workspace;
-  channel: Channel;
+  channel?: Channel;
+  recipientId?: string;
   toggleFileUploadModal: () => void;
 };
 
@@ -42,6 +43,7 @@ const ChatFileUpload: FC<ChatFileUploadProps> = ({
   userData,
   workspaceData,
   channel,
+  recipientId,
   toggleFileUploadModal,
 }) => {
   const [isUploading, setIsUploading] = useState(false);
@@ -84,14 +86,27 @@ const ChatFileUpload: FC<ChatFileUploadProps> = ({
       return { error: error.message };
     }
 
-    const { error: messageInsertError } = await supabase
-      .from("messages")
-      .insert({
+    let messageInsertError;
+
+    if (recipientId) {
+      const { error: dmError } = await supabase.from("direct_messages").insert({
+        file_url: data.path,
+        user_id: userData.id,
+        user_one: userData.id,
+        user_two: recipientId,
+      });
+
+      messageInsertError = dmError;
+    } else {
+      const { error: cmError } = await supabase.from("messages").insert({
         file_url: data.path,
         user_id: userData.id,
         workspace_id: workspaceData.id,
-        channel_id: channel.id,
+        channel_id: channel?.id,
       });
+
+      messageInsertError = cmError;
+    }
 
     if (messageInsertError) {
       console.log("Error inserting message", messageInsertError);

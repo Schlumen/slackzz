@@ -1,11 +1,12 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextApiRequest } from "next";
 
 import { getUserDataPages } from "@/actions/get-user-data";
 import supabaseServerClientPages from "@/lib/supabase/supabaseServerPage";
+import { SocketIoApiResponse } from "@/types/app";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: SocketIoApiResponse
 ) {
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method Not Allowed" });
@@ -52,12 +53,16 @@ export default async function handler(
         file_url: fileUrl,
       })
       .select("*, user: user_id(*)")
+      .order("created_at", { ascending: true })
       .single();
 
     if (creatingMessageError) {
       console.error("MESSAGE CREATION ERROR: ", creatingMessageError);
       return res.status(500).json({ message: "Internal Server Error" });
     }
+
+    // Emit the message to the channel
+    res?.socket?.server?.io.emit(`channel:${channelId}:channel-messages`, data);
 
     return res.status(201).json({ message: "Message created", data });
   } catch (error) {
