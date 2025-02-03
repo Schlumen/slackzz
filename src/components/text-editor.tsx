@@ -10,22 +10,35 @@ import axios from "axios";
 
 import { Button } from "@/components/ui/button";
 import MenuBar from "@/components/menu-bar";
-import { Channel, Workspace } from "@/types/app";
+import { Channel, User, Workspace } from "@/types/app";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import ChatFileUpload from "@/components/chat-file-upload";
 
 type TextEditorProps = {
   apiUrl: string;
   type: "channel" | "directMessage";
   channel: Channel;
-  workscaceData: Workspace;
+  workspaceData: Workspace;
+  userData: User;
 };
 
 const TextEditor: FC<TextEditorProps> = ({
   apiUrl,
   type,
   channel,
-  workscaceData,
+  workspaceData,
+  userData,
 }) => {
   const [content, setContent] = useState("");
+  const [fileUploadModal, setFileUploadModal] = useState(false);
+
+  const toggleFileUploadModal = () => setFileUploadModal(prev => !prev);
 
   const editor = useEditor({
     extensions: [
@@ -48,7 +61,7 @@ const TextEditor: FC<TextEditorProps> = ({
 
     try {
       await axios.post(
-        `${apiUrl}?channelId=${channel?.id}&workspaceId=${workscaceData.id}`,
+        `${apiUrl}?channelId=${channel?.id}&workspaceId=${workspaceData.id}`,
         {
           content,
         }
@@ -73,7 +86,11 @@ const TextEditor: FC<TextEditorProps> = ({
         />
       </div>
       <div className="absolute top-3 z-10 right-3 bg-black dark:bg-white cursor-pointer transition-all duration-500 hover:scale-110 text-white grid place-content-center rounded-full w-6 h-6">
-        <FiPlus size={28} className="dark:text-black" />
+        <FiPlus
+          onClick={toggleFileUploadModal}
+          size={28}
+          className="dark:text-black"
+        />
       </div>
 
       <Button
@@ -84,6 +101,24 @@ const TextEditor: FC<TextEditorProps> = ({
       >
         <Send />
       </Button>
+
+      <Dialog onOpenChange={setFileUploadModal} open={fileUploadModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>File Uplaod</DialogTitle>
+            <DialogDescription>
+              Upload a file to share with your team
+            </DialogDescription>
+
+            <ChatFileUpload
+              userData={userData}
+              workspaceData={workspaceData}
+              channel={channel}
+              toggleFileUploadModal={toggleFileUploadModal}
+            />
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

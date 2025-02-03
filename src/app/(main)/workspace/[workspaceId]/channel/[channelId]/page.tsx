@@ -66,7 +66,8 @@ const ChannelId = async ({
           apiUrl="/api/web-socket/messages"
           type="channel"
           channel={currentChannelData}
-          workscaceData={currentWorkspaceData}
+          workspaceData={currentWorkspaceData}
+          userData={userData}
         />
       </div>
     </div>
