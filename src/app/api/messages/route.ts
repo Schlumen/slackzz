@@ -35,7 +35,7 @@ export async function GET(req: Request) {
       .select("*, user: user_id (*)")
       .eq("channel_id", channelId)
       .range(from, to)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: false });
 
     if (error) {
       console.log("GET MESSAGES ERROR", error);

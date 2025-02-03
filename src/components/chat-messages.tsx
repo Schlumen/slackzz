@@ -1,8 +1,12 @@
 import { FC } from "react";
+import { format } from "date-fns";
 
 import { useChatFetcher } from "@/hooks/use-chat-fetcher";
 import { Channel, User, Workspace } from "@/types/app";
 import DotAnimatedLoader from "@/components/dot-animated-loader";
+import ChatItem from "@/components/chat-item";
+
+const DATE_FORMAT = "d MMM yyy, HH:mm";
 
 type ChatMessagesProps = {
   userData: User;
@@ -22,6 +26,7 @@ const ChatMessages: FC<ChatMessagesProps> = ({
   apiUrl,
   paramKey,
   paramValue,
+  socketUrl,
   socketQuery,
   type,
   chatId,
@@ -52,9 +57,20 @@ const ChatMessages: FC<ChatMessagesProps> = ({
   const renderMessages = () =>
     data.pages.map(page =>
       page.data.map(message => (
-        <div key={message.id}>
-          {message.content ? message.content : "File Url"}
-        </div>
+        <ChatItem
+          key={message.id}
+          currentUser={userData}
+          user={message.user}
+          content={message.content}
+          fileUrl={message.file_url}
+          deleted={message.is_deleted}
+          id={message.id}
+          timestamp={format(new Date(message.created_at), DATE_FORMAT)}
+          isUpdated={message.updated_at !== message.created_at}
+          socketUrl={socketUrl}
+          socketQuery={socketQuery}
+          channelData={channelData}
+        />
       ))
     );
 
