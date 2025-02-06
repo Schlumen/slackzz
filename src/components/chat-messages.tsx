@@ -5,6 +5,7 @@ import { useChatFetcher } from "@/hooks/use-chat-fetcher";
 import { Channel, User, Workspace } from "@/types/app";
 import DotAnimatedLoader from "@/components/dot-animated-loader";
 import ChatItem from "@/components/chat-item";
+import { useChatSocketConnection } from "@/hooks/use-chat-socket-connection";
 
 const DATE_FORMAT = "d MMM yyy, HH:mm";
 
@@ -45,6 +46,19 @@ const ChatMessages: FC<ChatMessagesProps> = ({
       paramValue,
       pageSize: 10,
     });
+
+  useChatSocketConnection({
+    queryKey,
+    addKey:
+      type === "Channel"
+        ? `${queryKey}:channel-messages`
+        : "direct-messages:post",
+    updateKey:
+      type === "Channel"
+        ? `${queryKey}:channel-message:update`
+        : "direct-messages:update",
+    paramValue,
+  });
 
   if (status === "pending") {
     return <DotAnimatedLoader />;

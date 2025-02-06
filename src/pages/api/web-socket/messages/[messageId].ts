@@ -74,7 +74,7 @@ export default async function handler(
     }
 
     res?.socket?.server?.io?.emit(
-      `channel:${channelId}:channel-message:update`,
+      `channel:${channelId}:channel-messages:update`,
       updatedMessage
     );
     return res.status(200).json({ message: updatedMessage });
