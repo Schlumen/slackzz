@@ -7,7 +7,8 @@ import InfoSection from "@/components/info-section";
 import Sidebar from "@/components/sidebar";
 import TextEditor from "@/components/text-editor";
 import { Channel, User, Workspace } from "@/types/app";
-import ChatMessages from "./chat-messages";
+import ChatMessages from "@/components/chat-messages";
+import SearchBar from "@/components/search-bar";
 
 type ChatGroupProps = {
   type: "Channel" | "DirectMessage";
@@ -40,7 +41,6 @@ const ChatGroup: FC<ChatGroupProps> = ({
   currentChannelData,
   userWorkspaceChannels,
   userWorkspaceData,
-  slug,
 }) => {
   return (
     <>
@@ -57,6 +57,11 @@ const ChatGroup: FC<ChatGroupProps> = ({
           currentChannelId={
             type === "Channel" ? currentChannelData.id : undefined
           }
+        />
+        <SearchBar
+          currentWorkspaceData={currentWorkspaceData}
+          currentChannelData={currentChannelData}
+          loggedInUserId={userData.id}
         />
         <div className="p-4 relative w-full overflow-hidden">
           <ChatHeader title={headerTitle} chatId={chatId} userData={userData} />

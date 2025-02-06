@@ -21,9 +21,36 @@ export const getCurrentWorkspaceData = async (workspaceId: string) => {
 
   const { data, error } = await supabase
     .from("workspaces")
-    .select("*")
+    // .select("*")
+    .select("*, channels(*)")
     .eq("id", workspaceId)
     .single();
+
+  if (error) {
+    return [null, error];
+  }
+
+  const { members } = data;
+
+  const memberDetails = await Promise.all(
+    members.map(async (memberId: string) => {
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", memberId)
+        .single();
+      if (userError) {
+        console.log(
+          `Error fetching user data for member ${memberId}`,
+          userError
+        );
+        return null;
+      }
+      return userData;
+    })
+  );
+
+  data.members = memberDetails.filter(member => member !== null);
 
   return [data, error];
 };

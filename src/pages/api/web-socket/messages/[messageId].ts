@@ -46,11 +46,11 @@ export default async function handler(
     // const isAdmin = userData.type === "admin";
     // const isRegulator = userData.type === "regulator";
 
-    const canEditMessage = isMessageOwner && !messageData.deleted;
+    // const canEditMessage = isMessageOwner && !messageData.deleted;
 
-    if (!canEditMessage) {
-      return res.status(403).json({ error: "Forbidden" });
-    }
+    // if (!canEditMessage) {
+    //   return res.status(403).json({ error: "Forbidden" });
+    // }
 
     if (req.method === "PATCH") {
       if (!isMessageOwner) {
