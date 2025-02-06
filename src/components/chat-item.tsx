@@ -3,17 +3,32 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { MdOutlineAdminPanelSettings } from "react-icons/md";
+import {
+  MdOutlineAdminPanelSettings,
+  MdOutlineAssistantPhoto,
+} from "react-icons/md";
 import { z } from "zod";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Form } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import Typography from "@/components/ui/typography";
 import { useChatFile } from "@/hooks/use-chat-file";
 import { cn } from "@/lib/utils";
 import { Channel, User } from "@/types/app";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { Edit, Trash } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
+import axios from "axios";
 
 type ChatItemProps = {
   id: string;
@@ -48,6 +63,8 @@ const ChatItem = ({
 }: ChatItemProps) => {
   const { publicUrl, fileType } = useChatFile(fileUrl!);
   const [isEditing, setIsEditing] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -63,10 +80,38 @@ const ChatItem = ({
   const canEditMessage = !deleted && isOwner && !fileUrl;
   const isPdf = fileType === "pdf" && fileUrl;
   const isImage = fileType === "image" && fileUrl;
-  // const isLoading = status === "loading";
+  const isLoading = form.formState.isSubmitting;
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    console.log(data);
+  useEffect(() => form.reset({ content: content ?? "" }), [content, form]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsEditing(false);
+      }
+      if (e.key === "Enter") {
+        form.handleSubmit(onSubmit)();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const onSubmit = async ({ content }: z.infer<typeof formSchema>) => {
+    const url = `${socketUrl}/${id}?${new URLSearchParams(socketQuery)}`;
+    await axios.patch(url, { content });
+    setIsEditing(false);
+    form.reset();
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    const url = `${socketUrl}/${id}?${new URLSearchParams(socketQuery)}`;
+    await axios.delete(url);
+    setIsDeleting(false);
+    setOpenDeleteDialog(false);
   };
 
   const FilePreview = () => (
@@ -109,7 +154,30 @@ const ChatItem = ({
   const EditableContent = () =>
     isEditing ? (
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}></form>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <fieldset
+            className="flex items-center w-full gap-x-2 pt-2"
+            disabled={isLoading}
+          >
+            <FormField
+              control={form.control}
+              name="content"
+              render={({ field }) => (
+                <FormItem className="flex-1">
+                  <FormControl>
+                    <Input
+                      className="p-2 border-none bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                      placeholder="edited message"
+                      {...field}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <Button size="sm">Save</Button>
+          </fieldset>
+        </form>
+        <span className="text-[10px]">Press ESC to cancel, enter to save</span>
       </Form>
     ) : (
       <div
@@ -117,6 +185,77 @@ const ChatItem = ({
         dangerouslySetInnerHTML={{ __html: content ?? "" }}
       ></div>
     );
+
+  const DeleteDialog = () => (
+    <Dialog onOpenChange={setOpenDeleteDialog} open={openDeleteDialog}>
+      <DialogTrigger>
+        <Trash size={20} />
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Are yuo sure you want to delete?</DialogTitle>
+          <DialogDescription>
+            This action cannot be undone. This will permanently delete the
+            message.
+          </DialogDescription>
+          <div className="text-center">
+            {isPdf && (
+              <div className="items-start justify-center gap-3 relative">
+                <Typography variant="p" text="shared file" />
+                <Link
+                  href={publicUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:underline"
+                >
+                  View PDF
+                </Link>
+              </div>
+            )}
+            {!fileUrl && !isEditing && (
+              <div
+                className="text-sm"
+                dangerouslySetInnerHTML={{ __html: content ?? "" }}
+              />
+            )}
+            {isImage && (
+              <Link
+                href={publicUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative aspect-square rounded-md mt-2 overflow-hidden border flex items-center bg-secondary h-48 w-48 mx-auto"
+              >
+                <Image
+                  src={publicUrl}
+                  alt={content ?? ""}
+                  fill
+                  className="object-cover"
+                />
+              </Link>
+            )}
+          </div>
+        </DialogHeader>
+        <div className="flex flex-col gap-2">
+          <Button
+            onClick={() => setOpenDeleteDialog(false)}
+            className="w-full"
+            variant="secondary"
+            disabled={isDeleting}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDelete}
+            className="w-full"
+            variant="destructive"
+            disabled={isDeleting}
+          >
+            Delete
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 
   return (
     <div className="relative group flex items-center hover:bg-black/5 p-2 rounded transition w-full">
@@ -140,14 +279,29 @@ const ChatItem = ({
               text={user.name ?? user.email}
               className="font-semibold text-sm hover:underline cursor-pointer"
             />
-            <MdOutlineAdminPanelSettings className="w-5 h-5" />
-            <span className="text-sm">(editd)</span>
+            {isSuperAdmin && (
+              <MdOutlineAdminPanelSettings className="w-5 h-5" />
+            )}
+            {isRegulator && <MdOutlineAssistantPhoto className="w-5 h-5" />}
+            {isUpdated && !deleted && <span className="text-sm">(edited)</span>}
             <span>{timestamp}</span>
           </div>
           <FilePreview />
           {!fileUrl && <EditableContent />}
         </div>
       </div>
+      {canDeleteMessage && (
+        <div className="hidden absolute group-hover:flex flex-row gap-2 border bg-white dark:bg-black dark:text-white text-black rounded-md p-2 top-0 -translate-y-1/3 right-0">
+          <DeleteDialog />
+          {canEditMessage && (
+            <Edit
+              className="cursor-pointer"
+              size={20}
+              onClick={() => setIsEditing(true)}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 };

@@ -38,7 +38,7 @@ export const useChatFetcher = ({
     queryFn: fetcher,
     getNextPageParam: (lastPage, allPages) =>
       lastPage.data.length === pageSize ? allPages.length : undefined,
-    refetchInterval: isConnected ? 1000 : false,
+    refetchInterval: isConnected ? false : 1000,
     retry: 3,
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: true,
