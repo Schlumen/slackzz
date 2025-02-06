@@ -82,7 +82,7 @@ export const AuthPage = () => {
   if (!isMounted) return null;
 
   return (
-    <div className="min-h-screen p-5 grid text-center place-content-center bg-white">
+    <div className="min-h-screen p-5 grid text-center place-content-center bg-white dark:bg-slate-900">
       <div className="max-w-[450px]">
         <div className="flex justify-center items-center gap-3 mb-4">
           <BsSlack size={30} />
