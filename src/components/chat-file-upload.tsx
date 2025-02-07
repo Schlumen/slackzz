@@ -91,7 +91,7 @@ const ChatFileUpload: FC<ChatFileUploadProps> = ({
     if (recipientId) {
       const { error: dmError } = await supabase.from("direct_messages").insert({
         file_url: data.path,
-        user_id: userData.id,
+        user: userData.id,
         user_one: userData.id,
         user_two: recipientId,
       });
