@@ -1,6 +1,7 @@
 "use client";
 
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import ChatHeader from "@/components/chat-header";
 import InfoSection from "@/components/info-section";
@@ -9,6 +10,7 @@ import TextEditor from "@/components/text-editor";
 import { Channel, User, Workspace } from "@/types/app";
 import ChatMessages from "@/components/chat-messages";
 import SearchBar from "@/components/search-bar";
+import VideoChat from "./video-chat";
 
 type ChatGroupProps = {
   type: "Channel" | "DirectMessage";
@@ -42,6 +44,14 @@ const ChatGroup: FC<ChatGroupProps> = ({
   userWorkspaceChannels,
   userWorkspaceData,
 }) => {
+  const [isVideoCall, setIsVideoCall] = useState(false);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const callParam = searchParams?.get("call");
+    setIsVideoCall(callParam === "true");
+  }, [searchParams, chatId]);
+
   return (
     <>
       <div className="h-[calc(100vh-256px)] overflow-y-auto [&::-webkit-scrollbar-thumb]:rounded-[6px] [&::-webkit-scrollbar-thumb]:bg-foreground/60 [&::-webkit-scrollbar-track]:bg-none [&::-webkit-scrollbar]:w-2">
@@ -67,32 +77,42 @@ const ChatGroup: FC<ChatGroupProps> = ({
           <ChatHeader title={headerTitle} chatId={chatId} userData={userData} />
 
           <div className="mt-10">
-            <ChatMessages
-              userData={userData}
-              name={currentChannelData?.name ?? "USERNAME"}
-              workspaceData={currentWorkspaceData}
-              chatId={chatId}
-              type={type}
-              apiUrl={apiUrl}
-              socketUrl={socketUrl}
-              socketQuery={socketQuery}
-              paramKey={paramKey}
-              paramValue={paramValue}
-              channelData={currentChannelData}
-            />
+            {!isVideoCall && (
+              <ChatMessages
+                userData={userData}
+                name={currentChannelData?.name ?? "USERNAME"}
+                workspaceData={currentWorkspaceData}
+                chatId={chatId}
+                type={type}
+                apiUrl={apiUrl}
+                socketUrl={socketUrl}
+                socketQuery={socketQuery}
+                paramKey={paramKey}
+                paramValue={paramValue}
+                channelData={currentChannelData}
+              />
+            )}
+            {isVideoCall && (
+              <VideoChat
+                chatId={type === "Channel" ? currentChannelData?.id : chatId}
+                userData={userData}
+              />
+            )}
           </div>
         </div>
       </div>
 
       <div className="m-4">
-        <TextEditor
-          apiUrl={socketUrl}
-          type={type}
-          channel={currentChannelData}
-          workspaceData={currentWorkspaceData}
-          userData={userData}
-          recipientId={type === "DirectMessage" ? chatId : undefined}
-        />
+        {!isVideoCall && (
+          <TextEditor
+            apiUrl={socketUrl}
+            type={type}
+            channel={currentChannelData}
+            workspaceData={currentWorkspaceData}
+            userData={userData}
+            recipientId={type === "DirectMessage" ? chatId : undefined}
+          />
+        )}
       </div>
     </>
   );
