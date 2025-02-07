@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useRef } from "react";
 import { format } from "date-fns";
 
 import { useChatFetcher } from "@/hooks/use-chat-fetcher";
@@ -6,6 +6,9 @@ import { Channel, User, Workspace } from "@/types/app";
 import DotAnimatedLoader from "@/components/dot-animated-loader";
 import ChatItem from "@/components/chat-item";
 import { useChatSocketConnection } from "@/hooks/use-chat-socket-connection";
+import IntroBanner from "@/components/intro-banner";
+import { Button } from "@/components/ui/button";
+import { useChatScrollHandler } from "@/hooks/use-chat-scroll-handler";
 
 const DATE_FORMAT = "d MMM yyy, HH:mm";
 
@@ -34,11 +37,15 @@ const ChatMessages: FC<ChatMessagesProps> = ({
   userData,
   workspaceData,
   channelData,
+  name,
 }) => {
+  const chatRef = useRef<HTMLDivElement>(null!);
+  const bottomRef = useRef<HTMLDivElement>(null!);
+
   const queryKey =
     type === "Channel" ? `channel:${chatId}` : `direct_message:${chatId}`;
 
-  const { data, status, fetchNextPage, hasNextPage, isFetchNextPage } =
+  const { data, status, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useChatFetcher({
       apiUrl,
       queryKey,
@@ -59,6 +66,14 @@ const ChatMessages: FC<ChatMessagesProps> = ({
         : "direct-messages:update",
     paramValue,
   });
+
+  useChatScrollHandler({
+    chatRef,
+    bottomRef,
+    lastMessageId: data?.pages?.[0].data?.[0]?.id ?? "",
+  });
+
+  console.log(data?.pages?.[0].data?.[0]?.id);
 
   if (status === "pending") {
     return <DotAnimatedLoader />;
@@ -89,8 +104,27 @@ const ChatMessages: FC<ChatMessagesProps> = ({
     );
 
   return (
-    <div className="flex-1 flex flex-col py-4 overflow-y-auto">
+    <div ref={chatRef} className="flex-1 flex flex-col py-4 overflow-y-auto">
+      {!hasNextPage && (
+        <IntroBanner
+          type={type}
+          name={name}
+          creationDate={workspaceData.created_at}
+        />
+      )}
+      {hasNextPage && (
+        <div className="flex justify-center">
+          {isFetchingNextPage ? (
+            <DotAnimatedLoader />
+          ) : (
+            <Button variant="link" onClick={() => fetchNextPage()}>
+              Load Previous Messages
+            </Button>
+          )}
+        </div>
+      )}
       <div className="flex flex-col-reverse mt-auto">{renderMessages()}</div>
+      <div ref={bottomRef} />
     </div>
   );
 };
